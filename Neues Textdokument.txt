@@ -1,0 +1,166 @@
+#Snake
+import pygame,time,random
+
+#Bildschirmgroesse festlegen
+window_x = 720
+window_y = 480
+
+#Farben erstellen
+white = pygame.Color(255,255,255)
+black = pygame.Color(0,0,0)
+yellow = pygame.Color(255,255,0)
+red = pygame.Color(255,0,0)
+
+#Geschwindigkeit der Schlange
+snake_speed = 15
+
+#pygame initalisieren
+pygame.init()
+
+#Fenster erstellen
+pygame.display.set_caption('Snake')
+window = pygame.display.set_mode((window_x,window_y))
+
+#FPS-Kontrolle
+fps = pygame.time.Clock()
+
+#Startposition der Schlange
+snake_position = [100,50]
+
+#Teile der Schlange erstellen
+snake_body = [[100,50],
+              [90,50],
+              [80,50],
+              [70,50]
+             ]
+
+#Fruchtposition festlegen
+fruit_position = [random.randrange(1, (window_x//10))*10,
+                  random.randrange(1, (window_y//10))*10]
+fruit_spawn = True
+
+#Richtung der Schlange festlegen
+direction = 'RIGHT'
+change_to = direction
+
+#Startscore festlegen
+score = 0
+
+#Scorefunktion erstellen
+def show_score(choice,color,font,size):
+
+    #Font des Scores erstellen
+    score_font = pygame.font.SysFont(font,size)
+    #Objekt auf dem Bildschirm erstellen
+    score_surface = score_font.render('Score: '+ str(score), True, color)
+    #Rechteck für den Text erstellen
+    score_rect = score_surface.get_rect()
+    #Text zeichnen
+    window.blit(score_surface,score_rect)
+
+def game_over():
+    #Font für Game Over erstellen
+    my_font = pygame.font.SysFont("times new roman", 50)
+    #Objekt auf dem Bildschirm erstellen
+    game_over_surface = my_font.render("Your final score is: " + str(score), True, red)
+    #Rechteck für den Text erstellen
+    game_over_rect = game_over_surface.get_rect()
+    #Position des Textes festlegen
+    game_over_rect.midtop = (window_x/2, window_y/4)
+    #Text zeichnen
+    window.blit(game_over_surface,game_over_rect)
+    pygame.display.flip()
+    #Zwei Sekunden warten
+    time.sleep(2)
+    #Pygame beenden
+    pygame.quit()
+    #Programm beenden
+    quit()
+
+
+while True:
+
+    #Keyeingaben festlegen
+    for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                change_to = "UP"
+            if event.key == pygame.K_DOWN:
+                change_to = "DOWN"
+            if event.key == pygame.K_LEFT:
+                change_to = "LEFT"
+            if event.key == pygame.K_RIGHT:
+                change_to = "RIGHT"
+    #Aktion bei Drückung von zwei Keys festlegen
+    #Schlange soll sich nicht in zwei Richtungen gleichzeitig bewegen
+    if change_to == "UP" and direction != "DOWN":
+        direction = "UP"
+    if change_to == "DOWN" and direction != "UP":
+        direction = "DOWN"
+    if change_to == "LEFT" and direction != "RIGHT":
+        direction = "LEFT"
+    if change_to == "RIGHT" and direction != "LEFT":
+        direction = "RIGHT"
+
+    #Schlange bewegen
+    if direction == "UP":
+        snake_position[1] -= 10
+    if direction == "DOWN":
+        snake_position[1] += 10
+    if direction == "LEFT":
+        snake_position[0] -= 10
+    if direction == "RIGHT":
+        snake_position[0] += 10
+    #Schlange vergrößern wenn Schlange und Frucht kollidieren (Score wird um 10 erhöht)
+    snake_body.insert(0, list(snake_position))
+    if snake_position[0] == fruit_position[0] and snake_position[1] == fruit_position[1]:
+        score += 10
+        fruit_spawn = False
+    else:
+        snake_body.pop()
+
+    if not fruit_spawn:
+        fruit_position = [random.randrange(1, (window_x//10))*10,
+                          random.randrange(1, (window_y//10))*10]
+        
+    fruit_spawn = True
+    window.fill(black)
+
+    for pos in snake_body:
+        pygame.draw.rect(window, yellow,
+                         pygame.Rect(pos[0], pos[1], 10, 10))
+    pygame.draw.rect(window, white, pygame.Rect(
+        fruit_position[0], fruit_position[1], 10, 10))
+    
+    if snake_position[0] < 0 or snake_position[0] > window_x-10:
+        game_over()
+    if snake_position[1] < 0 or snake_position[1] > window_y-10:
+        game_over()
+
+    
+    for block in snake_body[1:]:
+        if snake_position[0] == block[0] and snake_position[1] == block[1]:
+            game_over()
+
+    show_score(1, white, 'times new roman', 20)
+
+    pygame.display.update()
+
+    fps.tick(snake_speed)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
